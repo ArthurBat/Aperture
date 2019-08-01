@@ -30,6 +30,8 @@ public final class Aperture: NSObject {
   }
 
   public let devices = Devices.self
+    
+    public var input: AVCaptureScreenInput?
 
   /// TODO: When targeting macOS 10.13, make the `videoCodec` option the type `AVVideoCodecType`
   public init(
@@ -45,16 +47,16 @@ public final class Aperture: NSObject {
     self.destination = destination
     session = AVCaptureSession()
 
-    let input = try AVCaptureScreenInput(displayID: screenId).unwrapOrThrow(ApertureError.invalidScreen)
+    input = try AVCaptureScreenInput(displayID: screenId).unwrapOrThrow(ApertureError.invalidScreen)
 
-    input.minFrameDuration = CMTime(videoFramesPerSecond: framesPerSecond)
+    input?.minFrameDuration = CMTime(videoFramesPerSecond: framesPerSecond)
 
     if let cropRect = cropRect {
-      input.cropRect = cropRect
+      input?.cropRect = cropRect
     }
 
-    input.capturesCursor = showCursor
-    input.capturesMouseClicks = highlightClicks
+    input?.capturesCursor = showCursor
+    input?.capturesMouseClicks = highlightClicks
 
     output = AVCaptureMovieFileOutput()
 
@@ -76,8 +78,8 @@ public final class Aperture: NSObject {
       }
     }
 
-    if session.canAddInput(input) {
-      session.addInput(input)
+    if session.canAddInput(input!) {
+      session.addInput(input!)
     } else {
       throw ApertureError.couldNotAddScreen
     }
@@ -116,6 +118,10 @@ public final class Aperture: NSObject {
   public func resume() {
     output.resumeRecording()
   }
+    
+    public func setCropRect(_ cropRect: CGRect) {
+        input?.cropRect = cropRect
+    }
 }
 
 extension Aperture: AVCaptureFileOutputRecordingDelegate {
